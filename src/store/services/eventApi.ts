@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 export const eventApi = createApi({
   reducerPath: 'eventApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6000'}/api/v1`,
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1`,
     prepareHeaders: (headers) => {
       const token = Cookies.get('accessToken');
       if (token) {
@@ -20,17 +20,17 @@ export const eventApi = createApi({
     getEvents: builder.query<ApiResponse<{ events: Event[]; meta: any }>, Record<string, any> | void>({
       query: (params) => {
         const queryString = params ? new URLSearchParams(params).toString() : '';
-        return `/events${queryString ? `?${queryString}` : ''}`;
+        return `/event${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['Event'],
     }),
     getEvent: builder.query<ApiResponse<Event>, string>({
-      query: (id) => `/events/${id}`,
+      query: (id) => `/event/${id}`, // FIXED: Changed from '/events/${id}' to '/event/${id}'
       providesTags: (result, error, id) => [{ type: 'Event', id }],
     }),
     createEvent: builder.mutation<ApiResponse<Event>, CreateEventData>({
       query: (data) => ({
-        url: '/events/create',
+        url: '/event/create',
         method: 'POST',
         body: data,
       }),
@@ -38,7 +38,7 @@ export const eventApi = createApi({
     }),
     updateEvent: builder.mutation<ApiResponse<Event>, { id: string; data: Partial<CreateEventData> }>({
       query: ({ id, data }) => ({
-        url: `/events/${id}/update`,
+        url: `/event/${id}/update`,
         method: 'PATCH',
         body: data,
       }),
@@ -50,14 +50,14 @@ export const eventApi = createApi({
     }),
     deleteEvent: builder.mutation<ApiResponse<any>, string>({
       query: (id) => ({
-        url: `/events/${id}/delete`,
+        url: `/event/${id}/delete`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Event', 'UserEvents'],
     }),
     rsvpEvent: builder.mutation<ApiResponse<Event>, { id: string; rsvpStatus: string }>({
       query: ({ id, rsvpStatus }) => ({
-        url: `/events/${id}/rsvp`,
+        url: `/event/${id}/rsvp`,
         method: 'POST',
         body: { rsvpStatus },
       }),
@@ -69,7 +69,7 @@ export const eventApi = createApi({
     getUserEvents: builder.query<ApiResponse<{ events: Event[]; meta: any }>, Record<string, any> | void>({
       query: (params) => {
         const queryString = params ? new URLSearchParams(params).toString() : '';
-        return `/events/user/my-events${queryString ? `?${queryString}` : ''}`;
+        return `/event/user/my-events${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: ['UserEvents'],
     }),

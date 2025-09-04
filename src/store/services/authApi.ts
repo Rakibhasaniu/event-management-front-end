@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6000'}/api/v1`,
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1`,
     prepareHeaders: (headers) => {
       const token = Cookies.get('accessToken');
       if (token) {

@@ -9,13 +9,8 @@ import { eventApi } from './services/eventApi';
 
 // Custom middleware to log all actions
 const loggerMiddleware = (store: any) => (next: any) => (action: any) => {
-  console.log('🎬 Action dispatched:', action.type);
-  console.log('🎬 Action payload:', action.payload);
-  console.log('🎬 State before:', store.getState());
   
   const result = next(action);
-  
-  console.log('🎬 State after:', store.getState());
   return result;
 };
 

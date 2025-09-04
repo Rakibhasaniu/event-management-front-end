@@ -10,8 +10,8 @@ const initialState: EventState = {
   error: null,
   filters: {
     searchTerm: '',
-    category: '',
-    status: 'upcoming',
+    category: 'AllCategory',
+    status: 'allstatus',
     page: 1,
     limit: 9,
   },

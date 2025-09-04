@@ -20,140 +20,114 @@ import {
   Person,
   MoreVert,
   Edit,
-  Delete
+  Delete,
+  Visibility,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  category: string;
-  status: string;
-  isPublic: boolean;
-  imageUrl?: string;
-  attendees?: any[];
-  maxAttendees?: number;
-  tags?: string[];
-  createdBy?: string;
-}
+import { Event } from '@/types';
+import { useRouter } from 'next/navigation';
 
 interface EventCardProps {
   event: Event;
-  showActions?: boolean;
-  isOwner?: boolean;
-  onEdit?: (eventId: string) => void;
+  onEdit?: (event: Event) => void;
   onDelete?: (eventId: string) => void;
   onRSVP?: (eventId: string, status: string) => void;
-  onClick?: (eventId: string) => void;
+  showActions?: boolean;
+  isOwner?: boolean;
 }
 
 const EventCard: React.FC<EventCardProps> = ({
   event,
-  showActions = false,
-  isOwner = false,
   onEdit,
   onDelete,
   onRSVP,
-  onClick,
+  showActions = true,
+  isOwner = false,
 }) => {
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
+  const handleMenuClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
   };
 
-  const handleMenuClose = () => {
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
-    handleMenuClose();
-    onEdit?.(event.id);
-  };
-
-  const handleDelete = () => {
-    handleMenuClose();
-    onDelete?.(event.id);
+  const handleCardClick = () => {
+    router.push(`/events/${event.id}`);
   };
 
   const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      conference: 'primary',
-      workshop: 'secondary',
-      meeting: 'success',
-      social: 'warning',
-      other: 'info',
+    const colors = {
+      Conference: 'primary',
+      Workshop: 'secondary',
+      Meetup: 'success',
+      Seminar: 'warning',
+      Other: 'info',
     };
-    return colors[category.toLowerCase()] || 'default';
+    return colors[category as keyof typeof colors] || 'default';
   };
 
   const getStatusColor = (status: string) => {
-    const colors: { [key: string]: string } = {
+    const colors = {
       upcoming: 'success',
       ongoing: 'warning',
-      completed: 'default',
+      completed: 'info',
       cancelled: 'error',
     };
-    return colors[status.toLowerCase()] || 'default';
+    return colors[status as keyof typeof colors] || 'default';
   };
 
   return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
+    <Card 
+      sx={{ 
+        height: '100%', 
+        display: 'flex', 
         flexDirection: 'column',
-        cursor: onClick ? 'pointer' : 'default',
-        '&:hover': onClick ? { boxShadow: 6 } : {},
-        transition: 'box-shadow 0.3s ease-in-out',
+        cursor: 'pointer',
+        transition: 'transform 0.2s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+        }
       }}
-      onClick={() => onClick?.(event.id)}
+      onClick={handleCardClick}
     >
       {event.imageUrl && (
         <CardMedia
           component="img"
-          height="140"
+          height="200"
           image={event.imageUrl}
           alt={event.title}
-          sx={{ objectFit: 'cover' }}
         />
       )}
-
-      <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold', flex: 1 }}>
+      
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography variant="h6" component="h2" gutterBottom>
             {event.title}
           </Typography>
-          
-          {showActions && isOwner && (
-            <IconButton
-              size="small"
-              onClick={handleMenuClick}
-              sx={{ ml: 1 }}
-            >
+          {isOwner && (
+            <IconButton size="small" onClick={handleMenuClick}>
               <MoreVert />
             </IconButton>
           )}
         </Box>
 
-        <Menu
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleMenuClose}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MenuItem onClick={handleEdit}>
-            <Edit sx={{ mr: 1, fontSize: 18 }} />
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <MenuItem onClick={() => { router.push(`/events/${event.id}`); handleClose(); }}>
+            <Visibility sx={{ mr: 1 }} fontSize="small" />
+            View
+          </MenuItem>
+          <MenuItem onClick={() => { onEdit?.(event); handleClose(); }}>
+            <Edit sx={{ mr: 1 }} fontSize="small" />
             Edit
           </MenuItem>
-          <MenuItem onClick={handleDelete}>
-            <Delete sx={{ mr: 1, fontSize: 18 }} />
-            Delete
+          <MenuItem onClick={() => { onDelete?.(event.id); handleClose(); }}>
+            <Delete sx={{ mr: 1 }} fontSize="small" />
+             Delete
           </MenuItem>
         </Menu>
 

@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Container,
@@ -12,185 +12,132 @@ import {
   Box,
   Alert,
   CircularProgress,
-  InputAdornment,
-  IconButton,
-  Grid,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useRegisterMutation } from '@/store/services/authApi';
-import { loginSuccess } from '@/store/slices/authSlice';
-import { RootState } from '@/store';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { addNotification } from '@/store/slices/uiSlice';
 
-const RegisterPage = () => {
-  const dispatch = useDispatch();
+const registerSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  phone: z.string().optional(),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+export default function RegisterPage() {
   const router = useRouter();
-  const [register, { isLoading }] = useRegisterMutation();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    profile: {
-      firstName: '',
-      lastName: '',
-      phone: '',
-    },
+  const dispatch = useAppDispatch();
+  const [registerMutation, { isLoading, error }] = useRegisterMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, router]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    if (name.startsWith('profile.')) {
-      const profileField = name.split('.')[1];
-      setFormData({
-        ...formData,
-        profile: {
-          ...formData.profile,
-          [profileField]: value,
-        },
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // Basic validation
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await register(formData).unwrap();
+      const registerData = {
+        email: data.email,
+        password: data.password,
+        profile: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+        },
+      };
+
+      console.log('🚀 Attempting registration with data:', registerData);
+      const result = await registerMutation(registerData).unwrap();
+      console.log('✅ Registration result:', result);
       
-      if (response.success) {
-        // Auto-login after successful registration
-        dispatch(loginSuccess(response.data));
-        router.push('/');
-      } else {
-        setError(response.message || 'Registration failed');
+      if (result.success) {
+        dispatch(addNotification({
+          type: 'success',
+          message: 'Registration successful! Please login.',
+        }));
+        router.push('/login');
       }
     } catch (err: any) {
-      setError(err.data?.message || 'Registration failed. Please try again.');
+      console.error('❌ Registration error:', err);
+      dispatch(addNotification({
+        type: 'error',
+        message: err.data?.message || 'Registration failed',
+      }));
     }
   };
 
   return (
-    <Container component="main" maxWidth="md">
-      <Box
-        sx={{
-          marginTop: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Create Account
+    <Container maxWidth="md">
+      <Box sx={{ mt: 8 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom align="center">
+            Register
           </Typography>
           
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {(error as any)?.data?.message || 'Registration failed'}
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
+            {/* Using Flex Layout instead of Grid */}
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <TextField
-                  autoComplete="given-name"
-                  name="profile.firstName"
-                  required
+                  {...register('firstName')}
                   fullWidth
-                  id="firstName"
                   label="First Name"
-                  autoFocus
-                  value={formData.profile.firstName}
-                  onChange={handleChange}
+                  error={!!errors.firstName}
+                  helperText={errors.firstName?.message}
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <TextField
-                  required
+                  {...register('lastName')}
                   fullWidth
-                  id="lastName"
                   label="Last Name"
-                  name="profile.lastName"
-                  autoComplete="family-name"
-                  value={formData.profile.lastName}
-                  onChange={handleChange}
+                  error={!!errors.lastName}
+                  helperText={errors.lastName?.message}
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="profile.phone"
-                  label="Phone Number"
-                  id="phone"
-                  autoComplete="tel"
-                  value={formData.profile.phone}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-            </Grid>
+              </div>
+              
+              <TextField
+                {...register('email')}
+                fullWidth
+                label="Email"
+                type="email"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
+              
+              <TextField
+                {...register('password')}
+                fullWidth
+                type="password"
+                label="Password"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+              />
+              
+              <TextField
+                {...register('phone')}
+                fullWidth
+                label="Phone (Optional)"
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
+              />
+            </div>
+
             <Button
               type="submit"
               fullWidth
@@ -198,20 +145,18 @@ const RegisterPage = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={isLoading}
             >
-              {isLoading ? <CircularProgress size={24} /> : 'Sign Up'}
+              {isLoading ? <CircularProgress size={24} /> : 'Register'}
             </Button>
-            <Box textAlign="center">
-              <Link href="/login" passHref>
-                <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
-                  Already have an account? Sign In
-                </Typography>
-              </Link>
-            </Box>
           </Box>
+
+          <Typography variant="body2" align="center">
+            Already have an account?{' '}
+            <Button variant="text" onClick={() => router.push('/login')}>
+              Login here
+            </Button>
+          </Typography>
         </Paper>
       </Box>
     </Container>
   );
-};
-
-export default RegisterPage;
+}

@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Container,
@@ -12,76 +12,79 @@ import {
   Box,
   Alert,
   CircularProgress,
-  InputAdornment,
-  IconButton,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAppSelector, useAppDispatch } from '@/hooks/useAppDispatch';
 import { useLoginMutation } from '@/store/services/authApi';
-import { loginStart, loginSuccess, loginFailure } from '@/store/slices/authSlice';
-import { RootState } from '@/store';
+import { loginSuccess, loginFailure } from '@/store/slices/authSlice';
+import { addNotification } from '@/store/slices/uiSlice';
+import Cookies from 'js-cookie';
 
-const LoginPage = () => {
-  const dispatch = useDispatch();
+const loginSchema = z.object({
+  id: z.string().min(1, 'User ID is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
   const router = useRouter();
-  const [login, { isLoading }] = useLoginMutation();
-  const { isAuthenticated, error } = useSelector((state: RootState) => state.auth);
-  
-  const [formData, setFormData] = useState({
-    id: '',
-    password: '',
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.auth);
+  const [loginMutation] = useLoginMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
   });
-  const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, router]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(loginStart());
-    
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login(formData).unwrap();
+      const result = await loginMutation(data).unwrap();
       
-      if (response.success) {
-        dispatch(loginSuccess(response.data.user));
-        // Store token in cookies (handled by your authSlice)
-        if (response.data.accessToken) {
-          localStorage.setItem('accessToken', response.data.accessToken);
+      if (result.success) {
+        Cookies.set('accessToken', result.data.accessToken);
+        
+        // Get user profile
+        const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6000'}/api/v1/users/profile`, {
+          headers: {
+            'Authorization': `Bearer ${result.data.accessToken}`,
+          },
+        });
+        
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          dispatch(loginSuccess(profileData.data));
+          Cookies.set('user', JSON.stringify(profileData.data));
         }
+        
+        dispatch(addNotification({
+          type: 'success',
+          message: 'Login successful!',
+        }));
+        
         router.push('/');
-      } else {
-        dispatch(loginFailure(response.message || 'Login failed'));
       }
     } catch (err: any) {
-      dispatch(loginFailure(err.data?.message || 'Login failed. Please try again.'));
+      dispatch(loginFailure(err.data?.message || 'Login failed'));
+      dispatch(addNotification({
+        type: 'error',
+        message: err.data?.message || 'Login failed',
+      }));
     }
   };
 
   return (
-    <Container component="main" maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Sign In
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 8 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom align="center">
+            Login
           </Typography>
           
           {error && (
@@ -90,65 +93,44 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
             <TextField
-              margin="normal"
-              required
+              {...register('id')}
               fullWidth
-              id="id"
               label="User ID"
-              name="id"
-              autoComplete="username"
-              autoFocus
-              value={formData.id}
-              onChange={handleChange}
+              margin="normal"
+              error={!!errors.id}
+              helperText={errors.id?.message}
+              placeholder="e.g., USER-000001"
             />
             <TextField
-              margin="normal"
-              required
+              {...register('password')}
               fullWidth
-              name="password"
+              type="password"
               label="Password"
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="current-password"
-              value={formData.password}
-              onChange={handleChange}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              margin="normal"
+              error={!!errors.password}
+              helperText={errors.password?.message}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? <CircularProgress size={24} /> : 'Sign In'}
+              {loading ? <CircularProgress size={24} /> : 'Login'}
             </Button>
-            <Box textAlign="center">
-              <Link href="/register" passHref>
-                <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
-                  Dont have an account? Sign Up
-                </Typography>
-              </Link>
-            </Box>
           </Box>
+
+          <Typography variant="body2" align="center">
+            Dont have an account?{' '}
+            <Button variant="text" onClick={() => router.push('/register')}>
+              Register here
+            </Button>
+          </Typography>
         </Paper>
       </Box>
     </Container>
   );
-};
-
-export default LoginPage;
+}
