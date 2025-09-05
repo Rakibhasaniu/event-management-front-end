@@ -28,7 +28,7 @@ import {
   useUpdateEventMutation 
 } from '@/store/services/eventApi';
 import { addNotification } from '@/store/slices/uiSlice';
-import { EditEventModalProps, EventCategory } from '@/types/event';
+import { EditEventModalProps, EventCategory } from '@/theme/types/event';
 
 
 

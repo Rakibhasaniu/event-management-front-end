@@ -37,10 +37,8 @@ import EditEventModal from '@/components/events/EditEventModal';
 export default function MyEventsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
-  const { userEvents } = useAppSelector((state) => state.events);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   
-  // Local state for filters
   const [filters, setFilters] = useState({
     searchTerm: '',
     status: 'allstatus',
@@ -48,31 +46,26 @@ export default function MyEventsPage() {
     limit: 6,
   });
 
-  // Edit modal state
   const [editModal, setEditModal] = useState({
     open: false,
     eventId: '',
   });
 
-  // Delete confirmation dialog
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     eventId: '',
     eventTitle: '',
   });
 
-  // API hooks
   const { data: eventsData, isLoading, refetch, error } = useGetUserEventsQuery(filters);
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
 
-  // Update Redux store when data changes
   useEffect(() => {
     if (eventsData?.success && eventsData.data) {
       dispatch(setUserEvents(eventsData?.data));
     }
   }, [eventsData, dispatch]);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
@@ -94,7 +87,6 @@ export default function MyEventsPage() {
     });
   };
 
-  // Add these missing functions:
   const handleEditModalClose = () => {
     setEditModal({
       open: false,
@@ -103,7 +95,7 @@ export default function MyEventsPage() {
   };
 
   const handleEditSuccess = () => {
-    refetch(); // Refresh the events list after successful edit
+    refetch(); 
     handleEditModalClose();
   };
 
@@ -140,12 +132,10 @@ export default function MyEventsPage() {
     setDeleteDialog({ open: false, eventId: '', eventTitle: '' });
   };
 
-  // Show loading or redirect if not authenticated
   if (!isAuthenticated) {
     return null;
   }
 
-  // Get events and meta from API response
   const events = eventsData?.data?.events || [];
   const meta = eventsData?.data?.meta;
 
@@ -171,14 +161,12 @@ export default function MyEventsPage() {
         </Typography>
       </Box>
 
-      {/* Error Display */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Failed to load events: {JSON.stringify(error)}
         </Alert>
       )}
 
-      {/* Search and Filters */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ 
           display: 'flex', 
@@ -186,7 +174,6 @@ export default function MyEventsPage() {
           gap: 2, 
           alignItems: 'center' 
         }}>
-          {/* Search Field */}
           <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
             <TextField
               fullWidth
@@ -199,7 +186,6 @@ export default function MyEventsPage() {
             />
           </Box>
 
-          {/* Status Filter */}
           <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 25%' } }}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
@@ -216,7 +202,6 @@ export default function MyEventsPage() {
             </FormControl>
           </Box>
 
-          {/* Items per page */}
           <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 25%' } }}>
             <FormControl fullWidth>
               <InputLabel>Per Page</InputLabel>
@@ -234,7 +219,6 @@ export default function MyEventsPage() {
         </Box>
       </Box>
 
-      {/* Events Content */}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress size={60} />

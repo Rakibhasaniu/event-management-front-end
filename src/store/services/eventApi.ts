@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { CreateEventData } from '@/types';
 import Cookies from 'js-cookie';
-import { ApiResponse } from '@/types/auth';
+import { ApiResponse } from '@/theme/types/auth';
+import { CreateEventData, Event } from '@/theme/types/event';
 
 export const eventApi = createApi({
   reducerPath: 'eventApi',

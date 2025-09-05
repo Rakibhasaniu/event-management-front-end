@@ -38,7 +38,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  needsPasswordChange: boolean; // Added password change flag
+  needsPasswordChange: boolean; 
 }
 export interface JWTPayload {
   userId: string;

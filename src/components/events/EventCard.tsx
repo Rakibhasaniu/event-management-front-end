@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { Event } from '@/types/event';
+import { Event } from '@/theme/types/event';
 
 interface EventCardProps {
   event: Event;
@@ -148,58 +148,10 @@ const EventCard: React.FC<EventCardProps> = ({
             <LocationOn sx={{ mr: 1, fontSize: 18 }} color="action" />
             <Typography variant="body2">{event.location}</Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Person sx={{ mr: 1, fontSize: 18 }} color="action" />
-            <Typography variant="body2">
-              {event.attendees?.length || 0}
-              {event.maxAttendees ? ` / ${event.maxAttendees}` : ''} attendees
-            </Typography>
-          </Box>
         </Box>
-
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-          <Chip
-            label={event.category}
-            color={getCategoryColor(event.category) as any}
-            size="small"
-          />
-          <Chip
-            label={event.status}
-            color={getStatusColor(event.status) as any}
-            size="small"
-            variant="outlined"
-          />
-          {!event.isPublic && (
-            <Chip label="Private" color="warning" size="small" />
-          )}
-        </Box>
-
-        {event.tags && event.tags.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-            {event.tags.slice(0, 3).map((tag: string, index: number) => (
-              <Chip key={index} label={tag} size="small" variant="outlined" />
-            ))}
-            {event.tags.length > 3 && (
-              <Chip label={`+${event.tags.length - 3} more`} size="small" variant="outlined" />
-            )}
-          </Box>
-        )}
       </CardContent>
 
-      {showActions && !isOwner && event.isPublic && event.status === 'upcoming' && (
-        <Box sx={{ p: 2, pt: 0 }}>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRSVP?.(event.id, 'attending');
-            }}
-          >
-            RSVP
-          </Button>
-        </Box>
-      )}
+  
     </Card>
   );
 };

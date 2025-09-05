@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   AppBar,
   Toolbar,
@@ -17,6 +17,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
@@ -73,61 +74,75 @@ const Navbar = () => {
   const mobileMenu = (
     <Box sx={{ width: 250 }} role="presentation">
       <List>
-        <ListItem button onClick={() => handleNavigation('/')}>
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary="Events" />
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => handleNavigation('/')}>
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Events" />
+          </ListItemButton>
         </ListItem>
 
         {isAuthenticated && (
           <>
-            <ListItem button onClick={() => handleNavigation('/events/create')}>
-              <ListItemIcon>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText primary="Create Event" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/events/create')}>
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Create Event" />
+              </ListItemButton>
             </ListItem>
 
-            <ListItem button onClick={() => handleNavigation('/events/my-events')}>
-              <ListItemIcon>
-                <EventIcon />
-              </ListItemIcon>
-              <ListItemText primary="My Events" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/my-events')}>
+                <ListItemIcon>
+                  <EventIcon />
+                </ListItemIcon>
+                <ListItemText primary="My Events" />
+              </ListItemButton>
             </ListItem>
 
-            <ListItem button onClick={() => handleNavigation('/profile')}>
-              <ListItemIcon>
-                <AccountCircle />
-              </ListItemIcon>
-              <ListItemText primary="Profile" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/profile')}>
+                <ListItemIcon>
+                  <AccountCircle />
+                </ListItemIcon>
+                <ListItemText primary="Profile" />
+              </ListItemButton>
             </ListItem>
 
             <Divider />
 
-            <ListItem button onClick={handleLogout}>
-              <ListItemIcon>
-                <AccountCircle />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemIcon>
+                  <AccountCircle />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
             </ListItem>
           </>
         )}
 
         {!isAuthenticated && (
           <>
-            <ListItem button onClick={() => handleNavigation('/login')}>
-              <ListItemIcon>
-                <AccountCircle />
-              </ListItemIcon>
-              <ListItemText primary="Login" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/login')}>
+                <ListItemIcon>
+                  <AccountCircle />
+                </ListItemIcon>
+                <ListItemText primary="Login" />
+              </ListItemButton>
             </ListItem>
 
-            <ListItem button onClick={() => handleNavigation('/register')}>
-              <ListItemIcon>
-                <AccountCircle />
-              </ListItemIcon>
-              <ListItemText primary="Register" />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/register')}>
+                <ListItemIcon>
+                  <AccountCircle />
+                </ListItemIcon>
+                <ListItemText primary="Register" />
+              </ListItemButton>
             </ListItem>
           </>
         )}
@@ -166,7 +181,7 @@ const Navbar = () => {
                   </Button>
                   <Button
                     color="inherit"
-                    onClick={() => router.push('/events/my-events')}
+                    onClick={() => router.push('/my-events')}
                   >
                     My Events
                   </Button>
@@ -187,7 +202,7 @@ const Navbar = () => {
                       color="inherit"
                     >
                       <Avatar sx={{ width: 32, height: 32 }}>
-                        {user?.profile?.firstName?.[0] || <AccountCircle />}
+                        {user?.name?.[0] || <AccountCircle />}
                       </Avatar>
                     </IconButton>
                     <Menu
@@ -195,9 +210,7 @@ const Navbar = () => {
                       open={Boolean(anchorEl)}
                       onClose={handleClose}
                     >
-                      <MenuItem onClick={() => { router.push('/profile'); handleClose(); }}>
-                        Profile
-                      </MenuItem>
+                     
                       <MenuItem onClick={handleLogout}>Logout</MenuItem>
                     </Menu>
                   </Box>

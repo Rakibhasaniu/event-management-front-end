@@ -28,7 +28,7 @@ export default function HomePage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { events, filters, meta } = useAppSelector((state) => state.events);
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   
   const { data: eventsData, isLoading, refetch, error } = useGetEventsQuery(filters);
   const [rsvpMutation] = useRsvpEventMutation();

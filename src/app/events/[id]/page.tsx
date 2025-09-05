@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -44,7 +46,6 @@ import {
 } from '@/store/services/eventApi';
 import { addNotification } from '@/store/slices/uiSlice';
 import EditEventModal from '@/components/events/EditEventModal';
-import { Event } from '@/types/event';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -84,10 +85,8 @@ export default function EventDetailsPage() {
   const { data: eventData, isLoading, error, refetch } = useGetEventQuery(eventId);
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
   const [rsvpEvent, { isLoading: isRsvping }] = useRsvpEventMutation();
-  console.log("🚀 ~ EventDetailsPage ~ rsvpEvent:", rsvpEvent)
 
   const event = eventData?.data;
-  console.log("🚀 ~ EventDetailsPage ~ event:", event)
   const isOwner = user && event && event.createdBy?.id === user.id;
   
   // Get user's current RSVP status
@@ -125,7 +124,6 @@ export default function EventDetailsPage() {
         id: eventId,
         rsvpStatus,
       }).unwrap();
-      console.log("--------",result)
 
       if (result.success) {
         dispatch(addNotification({
@@ -152,7 +150,7 @@ export default function EventDetailsPage() {
           url: window.location.href,
         });
       } catch (error) {
-        // User cancelled sharing
+        
       }
     } else {
       // Fallback: copy to clipboard
@@ -421,38 +419,36 @@ export default function EventDetailsPage() {
                 <Typography variant="body1">
                   {event.attendees?.length || 0} attending
                   {event.maxAttendees && ` / ${event.maxAttendees} max`}
-                  {console.log(event)}
                 </Typography>
               </Box>
 
               {event.attendees && event.attendees.length > 0 && (
-                
                 <Box>
                   <Typography variant="subtitle2" gutterBottom>
-                    Who&aposs going:
+                    Who's going:
                   </Typography>
-                {event.attendees?.slice(0, 5).map((attendee: any, index: number) => {
-  // Debug each attendee
-  console.log(`Attendee ${index}:`, JSON.stringify(attendee, null, 2));
-  
-  return (
-    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-      <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-        {attendee.userDetails?.name?.[0] || 'U'}
-      </Avatar>
-      <Typography variant="body2">
-        {/* Show raw data for debugging */}
-        {attendee.userDetails?.name || `DEBUG: ${JSON.stringify(attendee.userDetails)}`}
-      </Typography>
-      <Chip
-        label={attendee.rsvpStatus}
-        size="small"
-        color={attendee.rsvpStatus === 'attending' ? 'success' : 'default'}
-        variant="outlined"
-      />
-    </Box>
-  );
-})}
+                  {event.attendees.slice(0, 5).map((attendee: any, index: number) => {
+                    // Fallback display since userDetails is missing from GET API
+                    const userName = attendee.userDetails?.name || `User ${attendee.userId.split('-')[1]}`;
+                    const userInitial = userName.charAt(0).toUpperCase();
+                    
+                    return (
+                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+                          {userInitial}
+                        </Avatar>
+                        <Typography variant="body2">
+                          {userName}
+                        </Typography>
+                        <Chip
+                          label={attendee.rsvpStatus}
+                          size="small"
+                          color={attendee.rsvpStatus === 'attending' ? 'success' : 'default'}
+                          variant="outlined"
+                        />
+                      </Box>
+                    );
+                  })}
                   
                   {event.attendees.length > 5 && (
                     <Typography variant="body2" color="text.secondary">
@@ -482,7 +478,7 @@ export default function EventDetailsPage() {
         <DialogTitle>Delete Event</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete &quot{event.title}&quot? This action cannot be undone.
+            Are you sure you want to delete "{event.title}"? This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -502,7 +498,7 @@ export default function EventDetailsPage() {
         <DialogTitle>RSVP to Event</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            Please select your attendance status for &quot{event.title}&quot:
+            Please select your attendance status for "{event.title}":
           </Typography>
           
           <FormControl fullWidth sx={{ mt: 2 }}>

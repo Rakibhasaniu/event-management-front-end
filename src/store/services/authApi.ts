@@ -1,6 +1,6 @@
 // store/services/authApi.ts
-import { ApiErrorResponse, ApiResponse, AuthResponse } from '@/types/auth';
-import { User } from '@/types/user';
+import { ApiErrorResponse, ApiResponse, AuthResponse } from '@/theme/types/auth';
+import { User } from '@/theme/types/user';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 

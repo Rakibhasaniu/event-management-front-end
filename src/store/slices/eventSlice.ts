@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { EventState, EventFilters } from '@/types';
-import { Event } from '@/types/event';
+import { Event, EventFilters, EventState } from '@/theme/types/event';
 
 const initialState: EventState = {
   events: [],
@@ -35,13 +34,11 @@ const eventSlice = createSlice({
       state.error = action.payload;
     },
     setEvents: (state, action: PayloadAction<{ events: Event[]; meta: any }>) => {
-  console.log('🔄 Redux Action: setEvents called with:', action.payload);
-  state.events = action.payload.events;
-  state.meta = action.payload.meta;
-  state.loading = false;
-  state.error = null;
-  console.log('🔄 Redux State Updated - Events Count:', state.events.length);
-},
+      state.events = action.payload.events;
+      state.meta = action.payload.meta;
+      state.loading = false;
+      state.error = null;
+    },
     setUserEvents: (state, action: PayloadAction<{ events: Event[]; meta: any }>) => {
       state.userEvents = action.payload.events;
       state.loading = false;
@@ -82,7 +79,6 @@ const eventSlice = createSlice({
     },
     updateEventRSVP: (state, action: PayloadAction<{ eventId: string; attendees: any[] }>) => {
       const { eventId, attendees } = action.payload;
-      console.log("🚀 ~ attendees+++++++:", attendees)
       const eventIndex = state.events.findIndex(event => event.id === eventId);
       if (eventIndex !== -1) {
         state.events[eventIndex].attendees = attendees;
