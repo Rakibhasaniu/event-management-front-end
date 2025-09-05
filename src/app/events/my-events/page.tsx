@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -69,7 +68,7 @@ export default function MyEventsPage() {
   // Update Redux store when data changes
   useEffect(() => {
     if (eventsData?.success && eventsData.data) {
-      dispatch(setUserEvents(eventsData.data));
+      dispatch(setUserEvents(eventsData?.data));
     }
   }, [eventsData, dispatch]);
 

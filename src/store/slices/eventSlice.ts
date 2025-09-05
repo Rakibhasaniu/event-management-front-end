@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { EventState, Event, EventFilters } from '@/types';
+import { EventState, EventFilters } from '@/types';
+import { Event } from '@/types/event';
 
 const initialState: EventState = {
   events: [],
@@ -81,6 +82,7 @@ const eventSlice = createSlice({
     },
     updateEventRSVP: (state, action: PayloadAction<{ eventId: string; attendees: any[] }>) => {
       const { eventId, attendees } = action.payload;
+      console.log("🚀 ~ attendees+++++++:", attendees)
       const eventIndex = state.events.findIndex(event => event.id === eventId);
       if (eventIndex !== -1) {
         state.events[eventIndex].attendees = attendees;

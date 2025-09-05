@@ -18,16 +18,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegisterMutation } from '@/store/services/authApi';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { loginSuccess } from '@/store/slices/authSlice';
 import { addNotification } from '@/store/slices/uiSlice';
+import Cookies from 'js-cookie';
 
+// Updated schema to match backend validation
 const registerSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
-  password: z.string()
-    .min(6, 'Password must be at least 6 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and number'),
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters').optional(),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters').optional(),
   phone: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -47,26 +50,43 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      // Transform data to match backend expectations
       const registerData = {
+        name: data.name,
         email: data.email,
         password: data.password,
-        profile: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phone: data.phone,
-        },
+        phone: data.phone,
+        address: data.address,
+        // Only include profile if firstName or lastName is provided
+        ...(data.firstName || data.lastName ? {
+          profile: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+          }
+        } : {})
       };
-
-      console.log('🚀 Attempting registration with data:', registerData);
       const result = await registerMutation(registerData).unwrap();
-      console.log('✅ Registration result:', result);
       
       if (result.success) {
+        // Backend now automatically logs in user after registration
+        // Store access token and user data
+        Cookies.set('accessToken', result.data.accessToken);
+        
+        const userData = result.data.user;
+        dispatch(loginSuccess(userData));
+        Cookies.set('user', JSON.stringify(userData));
+        
         dispatch(addNotification({
           type: 'success',
-          message: 'Registration successful! Please login.',
+          message: 'Registration successful! You are now logged in.',
         }));
-        router.push('/login');
+        
+        // Redirect based on role or to dashboard
+        if (userData.role === 'admin') {
+          router.push('/');
+        } else {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       console.error('❌ Registration error:', err);
@@ -91,51 +111,45 @@ export default function RegisterPage() {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
-            {/* Using Flex Layout instead of Grid */}
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 ,mb:2}}>
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <TextField
-                  {...register('firstName')}
-                  fullWidth
-                  label="First Name"
-                  error={!!errors.firstName}
-                  helperText={errors.firstName?.message}
-                />
-                <TextField
-                  {...register('lastName')}
-                  fullWidth
-                  label="Last Name"
-                  error={!!errors.lastName}
-                  helperText={errors.lastName?.message}
-                />
-              </div>
+              {/* Required Name Field */}
+              <TextField
+                {...register('name')}
+                fullWidth
+                label="Full Name *"
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                placeholder="e.g., John Doe"
+              />
               
+              {/* Optional Profile Fields */}
+             
+              
+              {/* Required Email Field */}
               <TextField
                 {...register('email')}
                 fullWidth
-                label="Email"
+                label="Email *"
                 type="email"
                 error={!!errors.email}
                 helperText={errors.email?.message}
+                placeholder="e.g., john@example.com"
+                autoComplete="email"
               />
               
+              {/* Required Password Field */}
               <TextField
                 {...register('password')}
                 fullWidth
                 type="password"
-                label="Password"
+                label="Password *"
                 error={!!errors.password}
                 helperText={errors.password?.message}
+                autoComplete="new-password"
               />
               
-              <TextField
-                {...register('phone')}
-                fullWidth
-                label="Phone (Optional)"
-                error={!!errors.phone}
-                helperText={errors.phone?.message}
-              />
+             
             </div>
 
             <Button

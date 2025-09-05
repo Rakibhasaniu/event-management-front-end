@@ -2,15 +2,19 @@
 
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { Toaster } from 'sonner';
-import { store } from '@/store';
+import { store, persistor } from '@/store';
 import { theme } from '@/theme/theme';
 import AuthProvider from '@/components/auth/AuthProvider';
 import Navbar from '@/components/layout/Navbar';
 
+const LoadingComponent = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 export default function RootLayout({
   children,
@@ -21,16 +25,16 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Provider store={store}>
-          <ThemeProvider theme={theme}>
-            {/* <LocalizationProvider dateAdapter={AdapterDayjs}> */}
+          <PersistGate loading={<LoadingComponent />} persistor={persistor}>
+            <ThemeProvider theme={theme}>
               <CssBaseline />
               <AuthProvider>
                 <Navbar />
                 {children}
                 <Toaster position="top-right" />
               </AuthProvider>
-            {/* </LocalizationProvider> */}
-          </ThemeProvider>
+            </ThemeProvider>
+          </PersistGate>
         </Provider>
       </body>
     </html>

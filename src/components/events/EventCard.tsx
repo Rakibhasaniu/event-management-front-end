@@ -24,8 +24,8 @@ import {
   Visibility,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { Event } from '@/types';
 import { useRouter } from 'next/navigation';
+import { Event } from '@/types/event';
 
 interface EventCardProps {
   event: Event;

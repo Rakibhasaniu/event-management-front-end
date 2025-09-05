@@ -32,6 +32,7 @@ export default function HomePage() {
   
   const { data: eventsData, isLoading, refetch, error } = useGetEventsQuery(filters);
   const [rsvpMutation] = useRsvpEventMutation();
+  console.log("🚀 ~ HomePage ~ rsvpMutation:", rsvpMutation)
 
   useEffect(() => {
     if (eventsData?.success) {

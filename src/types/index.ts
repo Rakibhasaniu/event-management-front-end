@@ -1,71 +1,48 @@
 // User Types
-export interface User {
-  id: string;
-  email: string;
-  role: 'admin' | 'user';
-  status: 'active' | 'blocked';
-  profile: {
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    avatar?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
 
-// Event Types
-export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  category: 'Conference' | 'Workshop' | 'Meetup' | 'Seminar' | 'Other';
-  createdBy: string;
-  attendees: Attendee[];
-  maxAttendees?: number;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  isPublic: boolean;
-  tags: string[];
-  imageUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Event } from "./event";
+import { User } from "./user";
 
-export interface Attendee {
-  userId: string;
-  rsvpStatus: 'attending' | 'maybe' | 'not_attending';
-  rsvpDate: string;
-}
 
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPage: number;
-  };
-}
 
 // Form Types
 export interface LoginCredentials {
-  id: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterData {
+  name: string; // Required name field
   email: string;
   password: string;
-  profile: {
-    firstName: string;
-    lastName: string;
-    phone?: string;
+  role?: 'admin' | 'user'; // Made optional with specific types
+  phone?: string; // Added optional phone
+  address?: string; // Added optional address
+  profile?: { // Made profile optional
+    firstName?: string;
+    lastName?: string;
+    bio?: string;
+    avatar?: string;
+    dateOfBirth?: string;
   };
+}
+
+export interface UpdateProfileData {
+  name?: string;
+  phone?: string;
+  address?: string;
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    bio?: string;
+    avatar?: string;
+    dateOfBirth?: string;
+  };
+}
+
+export interface ChangePasswordData {
+  oldPassword: string;
+  newPassword: string;
 }
 
 export interface CreateEventData {
@@ -73,20 +50,27 @@ export interface CreateEventData {
   description: string;
   date: string;
   location: string;
-  category: string;
+  category: 'Conference' | 'Workshop' | 'Meetup' | 'Seminar' | 'Other';
   maxAttendees?: number;
   isPublic?: boolean;
   tags?: string[];
   imageUrl?: string;
 }
 
-// Redux State Types
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
+export interface UpdateEventData {
+  title?: string;
+  description?: string;
+  date?: string;
+  location?: string;
+  category?: 'Conference' | 'Workshop' | 'Meetup' | 'Seminar' | 'Other';
+  maxAttendees?: number;
+  isPublic?: boolean;
+  tags?: string[];
+  imageUrl?: string;
+  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 }
+
+// Redux State Types
 
 export interface EventState {
   events: Event[];
@@ -107,6 +91,12 @@ export interface EventFilters {
   searchTerm: string;
   category: string;
   status: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  location?: string;
+  tags?: string[];
   page: number;
   limit: number;
 }
@@ -115,6 +105,11 @@ export interface UIState {
   sidebarOpen: boolean;
   theme: 'light' | 'dark';
   notifications: Notification[];
+  loading: {
+    global: boolean;
+    auth: boolean;
+    events: boolean;
+  };
 }
 
 export interface Notification {
@@ -122,4 +117,52 @@ export interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
   timestamp: number;
+  autoClose?: boolean;
+  duration?: number;
+}
+
+// Utility Types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface SearchParams {
+  search?: string;
+  category?: string;
+  status?: string;
+  role?: string;
+}
+
+export interface QueryParams extends PaginationParams, SearchParams {
+  sort?: string;
+  order?: 'asc' | 'desc';
+}
+
+// Admin specific types
+export interface UserManagementData {
+  status: 'active' | 'blocked';
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalEvents: number;
+  activeUsers: number;
+  upcomingEvents: number;
+  recentRegistrations: User[];
+  popularEvents: Event[];
+}
+
+// Event management types
+export interface EventStats {
+  totalAttendees: number;
+  rsvpBreakdown: {
+    attending: number;
+    maybe: number;
+    not_attending: number;
+  };
+  attendeeGrowth: Array<{
+    date: string;
+    count: number;
+  }>;
 }

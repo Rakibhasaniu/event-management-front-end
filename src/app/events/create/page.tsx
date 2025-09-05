@@ -26,6 +26,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useCreateEventMutation } from '@/store/services/eventApi';
 import { addNotification } from '@/store/slices/uiSlice';
 import Link from 'next/link';
+type EventCategory = 'Conference' | 'Workshop' | 'Meetup' | 'Seminar' | 'Other';
 
 const CreateEventPage = () => {
   const router = useRouter();
@@ -37,7 +38,7 @@ const CreateEventPage = () => {
     description: '',
     date: '',
     location: '',
-    category: 'Conference',
+    category: 'Conference' as EventCategory,
     maxAttendees: '',
     isPublic: true,
     tags: [] as string[],

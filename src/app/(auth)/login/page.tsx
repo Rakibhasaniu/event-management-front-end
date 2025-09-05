@@ -22,8 +22,9 @@ import { loginSuccess, loginFailure } from '@/store/slices/authSlice';
 import { addNotification } from '@/store/slices/uiSlice';
 import Cookies from 'js-cookie';
 
+// Updated schema to match backend validation
 const loginSchema = z.object({
-  id: z.string().min(1, 'User ID is required'),
+  email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -46,35 +47,33 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       const result = await loginMutation(data).unwrap();
-      
       if (result.success) {
         Cookies.set('accessToken', result.data.accessToken);
-        
-        // Get user profile
-        const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6000'}/api/v1/users/profile`, {
-          headers: {
-            'Authorization': `Bearer ${result.data.accessToken}`,
-          },
-        });
-        
-        if (profileResponse.ok) {
-          const profileData = await profileResponse.json();
-          dispatch(loginSuccess(profileData.data));
-          Cookies.set('user', JSON.stringify(profileData.data));
-        }
+        const userData = result.data.user;
+
+        dispatch(loginSuccess(userData));
+        Cookies.set('user', JSON.stringify(userData));
         
         dispatch(addNotification({
           type: 'success',
           message: 'Login successful!',
         }));
         
-        router.push('/');
+        // Redirect based on role or to dashboard
+        if (userData.role === 'admin') {
+          router.push('/');
+        } else {
+          router.push('/');
+        }
       }
     } catch (err: any) {
-      dispatch(loginFailure(err.data?.message || 'Login failed'));
+      console.error('❌ Login error:', err);
+      const errorMessage = err.data?.message || 'Login failed';
+      
+      dispatch(loginFailure(errorMessage));
       dispatch(addNotification({
         type: 'error',
-        message: err.data?.message || 'Login failed',
+        message: errorMessage,
       }));
     }
   };
@@ -95,13 +94,15 @@ export default function LoginPage() {
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
             <TextField
-              {...register('id')}
+              {...register('email')}
               fullWidth
-              label="User ID"
+              label="Email"
+              type="email"
               margin="normal"
-              error={!!errors.id}
-              helperText={errors.id?.message}
-              placeholder="e.g., USER-000001"
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              placeholder="e.g., rakib@gmail.com"
+              autoComplete="email"
             />
             <TextField
               {...register('password')}
@@ -111,6 +112,7 @@ export default function LoginPage() {
               margin="normal"
               error={!!errors.password}
               helperText={errors.password?.message}
+              autoComplete="current-password"
             />
             <Button
               type="submit"
@@ -124,7 +126,7 @@ export default function LoginPage() {
           </Box>
 
           <Typography variant="body2" align="center">
-            Dont have an account?{' '}
+            Don&apost have an account?{' '}
             <Button variant="text" onClick={() => router.push('/register')}>
               Register here
             </Button>

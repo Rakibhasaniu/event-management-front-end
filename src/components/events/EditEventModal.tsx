@@ -28,13 +28,10 @@ import {
   useUpdateEventMutation 
 } from '@/store/services/eventApi';
 import { addNotification } from '@/store/slices/uiSlice';
+import { EditEventModalProps, EventCategory } from '@/types/event';
 
-interface EditEventModalProps {
-  open: boolean;
-  eventId: string;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
+
+
 
 const EditEventModal: React.FC<EditEventModalProps> = ({
   open,
@@ -54,7 +51,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     description: '',
     date: '',
     location: '',
-    category: 'Conference',
+    category: 'Conference' as EventCategory,
     maxAttendees: '',
     isPublic: true,
     tags: [] as string[],
