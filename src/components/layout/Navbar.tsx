@@ -181,7 +181,7 @@ const Navbar = () => {
                   </Button>
                   <Button
                     color="inherit"
-                    onClick={() => router.push('/my-events')}
+                    onClick={() => router.push('/events/my-events')}
                   >
                     My Events
                   </Button>
