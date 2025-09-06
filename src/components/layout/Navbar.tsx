@@ -177,6 +177,8 @@ const Navbar = () => {
                     onClick={() => router.push('/events/create')}
                     startIcon={<AddIcon />}
                   >
+
+                  
                     Create Event
                   </Button>
                   <Button
