@@ -28,7 +28,7 @@ interface RegisterRequest {
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6000'}/api/v1`,
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'https://ggg-topaz.vercel.app'}/api/v1`,
     prepareHeaders: (headers) => {
       const token = Cookies.get('accessToken');
       if (token) {

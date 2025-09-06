@@ -7,7 +7,7 @@ import { CreateEventData, Event } from '@/theme/types/event';
 export const eventApi = createApi({
   reducerPath: 'eventApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1`,
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'https://ggg-topaz.vercel.app'}/api/v1`,
     prepareHeaders: (headers) => {
       const token = Cookies.get('accessToken');
       if (token) {
